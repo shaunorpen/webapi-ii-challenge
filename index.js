@@ -48,7 +48,7 @@ server.get('/api/posts', (req, res) => {
     .then(posts => {
         res.status(200).json(posts);
     })
-    .catch(error => {
+    .catch(() => {
         res.status(500).json({ error: "The posts information could not be retrieved." });
     });
 });
@@ -56,10 +56,10 @@ server.get('/api/posts', (req, res) => {
 server.get('/api/posts/:id', (req, res) => {
     db.findById(req.params.id)
     .then(post => {
-        if (post.length !== 0) {
-            res.status(200).json(post);
-        } else {
+        if (post.length === 0) {
             res.status(404).json({ message: "The post with the specified ID does not exist." });
+        } else {
+            res.status(200).json(post);
         }
     })
     .catch(() => {
@@ -68,23 +68,17 @@ server.get('/api/posts/:id', (req, res) => {
 });
 
 server.get('/api/posts/:id/comments', (req, res) => {
-    db.findById(req.params.id)
-    .then(post => {
-        if (post.length === 0) {
+    db.findPostComments(req.params.id)
+    .then(comments => {
+        if (comments.length === 0) {
             res.status(404).json({ message: "The post with the specified ID does not exist." })
         } else {
-            db.findPostComments(req.params.id)
-            .then(comments => {
                 res.status(200).json(comments);
+        }
             })
             .catch(() => {
                 res.status(500).json({ error: "The comments information could not be retrieved." });
-            });
-        }
     })
-    .catch(() => {
-        res.status(500).json({ error: "The comments information could not be retrieved." });
-    });
 });
 
 server.delete('/api/posts/:id', (req, res) => {
